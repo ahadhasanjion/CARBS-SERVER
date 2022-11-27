@@ -138,7 +138,27 @@ async function run(){
             const result = await cursor.toArray();
             res.send(result);
         });
-        
+
+        app.get("/products/myproducts", async(req, res) => {
+            const email = req.query.email;
+            const query = {email};
+            console.log(query)
+            const products = await productsCollection.find(query).toArray();
+            console.log(products)
+            res.send(products);
+        })
+
+
+
+
+
+
+
+
+
+
+
+
         
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
