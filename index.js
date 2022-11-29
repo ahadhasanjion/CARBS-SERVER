@@ -66,11 +66,12 @@ async function run() {
         //     const users = await usersCollection.find(query).toArray();
         //     res.send(users);
         // });
-        app.get('/users/seller/:email', async (req, res) => {
+        app.get('/users/seller/:email', async(req, res) => {
             const email = req.params.email;
-            const query = { email }
-            const user = await usersCollection.findOne(query);
-            res.send({ isSeller: user?.role === 'seller' });
+            console.log(email)
+            const query = {email};
+            const user = await usersCollection.findOne(query)
+            res.send({isSeller: user?.role === 'seller'});
         })
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
@@ -78,47 +79,47 @@ async function run() {
             const user = await usersCollection.findOne(query);
             res.send({ isAdmin: user?.role === 'admin' });
         })
-        app.put('/users/admin/:id', verifyJWT, async (req, res) => {
-            const decodedEmail = req.decoded.email;
-            const query = { email: decodedEmail };
-            const user = await usersCollection.findOne(query);
+        // app.put('/users/admin/:id', verifyJWT, async (req, res) => {
+        //     const decodedEmail = req.decoded.email;
+        //     const query = { email: decodedEmail };
+        //     const user = await usersCollection.findOne(query);
 
-            if (user?.role !== 'admin') {
-                return res.status(403).send({ message: 'forbidden access' })
-            }
+        //     if (user?.role !== 'admin') {
+        //         return res.status(403).send({ message: 'forbidden access' })
+        //     }
 
-            const id = req.params.id;
-            const filter = { _id: ObjectId(id) }
-            const options = { upsert: true };
-            const updatedDoc = {
-                $set: {
-                    role: 'admin'
-                }
-            }
-            const result = await usersCollection.updateOne(filter, updatedDoc, options);
-            res.send(result);
-        });
+        //     const id = req.params.id;
+        //     const filter = { _id: ObjectId(id) }
+        //     const options = { upsert: true };
+        //     const updatedDoc = {
+        //         $set: {
+        //             role: 'admin'
+        //         }
+        //     }
+        //     const result = await usersCollection.updateOne(filter, updatedDoc, options);
+        //     res.send(result);
+        // });
      
-        app.put('/users/seller/:id', verifyJWT, async (req, res) => {
-            const decodedEmail = req.decoded.email;
-            const query = { email: decodedEmail };
-            const user = await usersCollection.findOne(query);
+        // app.put('/users/seller/:id', verifyJWT, async (req, res) => {
+        //     const decodedEmail = req.decoded.email;
+        //     const query = { email: decodedEmail };
+        //     const user = await usersCollection.findOne(query);
 
-            if (user?.role !== 'seller' && user.role !== 'admin') {
-                return res.status(403).send({ message: 'forbidden access' })
-            }
+        //     if (user?.role !== 'seller' && user.role !== 'admin') {
+        //         return res.status(403).send({ message: 'forbidden access' })
+        //     }
 
-            const id = req.params.id;
-            const filter = { _id: ObjectId(id) }
-            const options = { upsert: true };
-            const updatedDoc = {
-                $set: {
-                    role: 'seller'
-                }
-            }
-            const result = await usersCollection.updateOne(filter, updatedDoc, options);
-            res.send(result);
-        });
+        //     const id = req.params.id;
+        //     const filter = { _id: ObjectId(id) }
+        //     const options = { upsert: true };
+        //     const updatedDoc = {
+        //         $set: {
+        //             role: 'seller'
+        //         }
+        //     }
+        //     const result = await usersCollection.updateOne(filter, updatedDoc, options);
+        //     res.send(result);
+        // });
 
       
         // app.get('/users/buyer/:email', async (req, res) => {
