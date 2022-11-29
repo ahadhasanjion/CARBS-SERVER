@@ -61,11 +61,7 @@ async function run() {
             res.send(result)
         })
 
-        // app.get('/users', async (req, res) => {
-        //     const query = {};
-        //     const users = await usersCollection.find(query).toArray();
-        //     res.send(users);
-        // });
+        
         app.get('/users/seller/:email', async(req, res) => {
             const email = req.params.email;
             console.log(email)
@@ -79,99 +75,8 @@ async function run() {
             const user = await usersCollection.findOne(query);
             res.send({ isAdmin: user?.role === 'admin' });
         })
-        // app.put('/users/admin/:id', verifyJWT, async (req, res) => {
-        //     const decodedEmail = req.decoded.email;
-        //     const query = { email: decodedEmail };
-        //     const user = await usersCollection.findOne(query);
-
-        //     if (user?.role !== 'admin') {
-        //         return res.status(403).send({ message: 'forbidden access' })
-        //     }
-
-        //     const id = req.params.id;
-        //     const filter = { _id: ObjectId(id) }
-        //     const options = { upsert: true };
-        //     const updatedDoc = {
-        //         $set: {
-        //             role: 'admin'
-        //         }
-        //     }
-        //     const result = await usersCollection.updateOne(filter, updatedDoc, options);
-        //     res.send(result);
-        // });
-     
-        // app.put('/users/seller/:id', verifyJWT, async (req, res) => {
-        //     const decodedEmail = req.decoded.email;
-        //     const query = { email: decodedEmail };
-        //     const user = await usersCollection.findOne(query);
-
-        //     if (user?.role !== 'seller' && user.role !== 'admin') {
-        //         return res.status(403).send({ message: 'forbidden access' })
-        //     }
-
-        //     const id = req.params.id;
-        //     const filter = { _id: ObjectId(id) }
-        //     const options = { upsert: true };
-        //     const updatedDoc = {
-        //         $set: {
-        //             role: 'seller'
-        //         }
-        //     }
-        //     const result = await usersCollection.updateOne(filter, updatedDoc, options);
-        //     res.send(result);
-        // });
 
       
-        // app.get('/users/buyer/:email', async (req, res) => {
-        //     const email = req.params.email;
-        //     const query = { email };
-        //     const user = await usersCollection.findOne(query);
-        //     res.send({ isBuyer: user?.role === 'buyer' });
-        // });
-
-
-
-        // app.get('/users/seller/:role', async (req, res) => {
-        //     const role = req.params.role;
-        //     let query = { role: role }
-        //     const user = await usersCollection.find(query).toArray();
-        //     res.send(user);
-        // });
-        // app.get('/users/buyer/:role', async (req, res) => {
-        //     const role = req.params.role;
-        //     let query = { role: role }
-        //     const user = await usersCollection.find(query).toArray();
-        //     res.send(user);
-        // });
-        
-
-
-        // app.get("/users/role", async(re, res)=> {
-        //     const role= req.query.role;
-        //     const query = {
-        //         role:role
-        //     }
-        //     const user = await usersCollection.findOne(query)
-        //     res.send(user)
-        // })
-
-        // app.get('/users/:role', async (req, res) => {
-        //     const role = req.params.role;
-        //     console.log(role)
-        //     const query = { role: role }
-        //     if (role === "seller") {
-        //         const user = await usersCollection.find(query).toArray();
-        //         res.send(user);
-        //     }
-        //     else if (role === "buyer") {
-        //         const user = await usersCollection.find(query).toArray();
-        //         res.send(user);
-        //     }
-        //     else {
-        //         const user = await usersCollection.find({}).toArray();
-        //         res.send(user);
-        //     }
-        // })
 
         app.get('/category', async (req, res) => {
             const query = {};
