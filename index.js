@@ -1,8 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
 const stripe = require("stripe")(process.env.STRIPE_SK);
 const port = process.env.PORT || 5000;
 const app = express();
@@ -26,6 +26,7 @@ function verifyJWT(req, res, next) {
 
     jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
         if (err) {
+            console.log(err)
             return res.status(403).send({ message: 'forbidden access' })
         }
         req.decoded = decoded;
@@ -166,13 +167,37 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result)
         })
+        app.get('/bookings/:id',  async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const booking = await bookingsCollection.findOne(query);
+            res.send(booking);
+        })
+        // app.post('/bookings', async (req, res) => {
+        //     const booking = req.body;
+        //     const query = {
+        //         productName: booking.productName,
+        //         email: booking.email,
+        //         userName: booking.userName
+        //     }
 
+        //     const booked = await bookingsCollection.find(query).toArray();
 
+        //     if (booked.length) {
+        //         const message = `You have already ordered ${order.productName}`;
+        //         return res.send({ acknowledged: false, message });
+        //     }
+        //     const result = await bookingsCollection.insertOne(order);
+        //     res.send(result);
+        // });
         app.post('/bookings', verifyJWT, async (req, res) => {
             const booking = req.body;
+            console.log(booking)
             const result = await bookingsCollection.insertOne(booking);
+            console.log(result)
             res.send(result);
         });
+
         app.get("/products/bookings", verifyJWT, async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
@@ -180,12 +205,7 @@ async function run() {
             res.send(bookings);
         })
 
-        app.get('/bookings/:id',  async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const booking = await bookingsCollection.findOne(query);
-            res.send(booking);
-        })
+       
         app.post('/create-payment-intent', async (req, res) => {
             const booking = req.body;
             const price = booking.price;
