@@ -262,19 +262,19 @@ async function run() {
         })
 
 
-        app.post('/bookings', async (req, res) => {
+        app.post('/bookings', verifyJWT, async (req, res) => {
             const booking = req.body;
             const result = await bookingsCollection.insertOne(booking);
             res.send(result);
         });
-        app.get("/products/bookings", async (req, res) => {
+        app.get("/products/bookings", verifyJWT, async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
             const bookings = await bookingsCollection.find(query).toArray();
             res.send(bookings);
         })
 
-        app.get('/bookings/:id', async (req, res) => {
+        app.get('/bookings/:id',  async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const booking = await bookingsCollection.findOne(query);
