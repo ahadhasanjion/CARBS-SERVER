@@ -224,16 +224,17 @@ async function run() {
             res.send(advertiseproducts);
         });
 
-        app.put('/products/verifySeller/:id', async (req, res) => {
-            const id = req.params.id;
-            const filter = { _id: ObjectId(id) };
+        app.put('/products/verifySeller/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email};
             const updatedDoc = {
                 $set: {
-                    sellerVerified: true
+                    verify: 'verified'
                 },
             };
             const options = { upsert: true };
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            const products = await productsCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         });
 
