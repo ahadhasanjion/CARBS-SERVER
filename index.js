@@ -18,6 +18,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 function verifyJWT(req, res, next) {
 
     const authHeader = req.headers.authorization;
+    console.log(authHeader)
     if (!authHeader) {
         return res.status(401).send('unauthorized access');
     }
@@ -150,7 +151,7 @@ async function run() {
             const query = { email: email };
             const user = await usersCollection.findOne(query);
             if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1h' })
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '20d' })
                 return res.send({ accessToken: token });
             }
             res.status(403).send({ accessToken: '' })
@@ -190,6 +191,21 @@ async function run() {
         //     const result = await bookingsCollection.insertOne(order);
         //     res.send(result);
         // });
+        
+        app.get('/bookings', verifyJWT, async (req, res) => {
+            const email = req.query.email;
+            const decodedEmail = req.decoded.email;
+
+            if (email !== decodedEmail) {
+                return res.status(403).send({ message: 'forbidden access' });
+            }
+
+            const query = { email: email };
+            const booking = await bookingsCollection.find(query).toArray();
+            console.log(booking)
+            res.send(booking);
+        });
+        
         app.post('/bookings', verifyJWT, async (req, res) => {
             const booking = req.body;
             console.log(booking)
@@ -197,13 +213,13 @@ async function run() {
             console.log(result)
             res.send(result);
         });
-
-        app.get("/products/bookings", verifyJWT, async (req, res) => {
-            const email = req.query.email;
-            const query = { email: email };
-            const bookings = await bookingsCollection.find(query).toArray();
-            res.send(bookings);
-        })
+       
+        // app.get("/products/bookings", verifyJWT, async (req, res) => {
+        //     const email = req.query.email;
+        //     const query = { email: email };
+        //     const bookings = await bookingsCollection.find(query).toArray();
+        //     res.send(bookings);
+        // })
 
        
         app.post('/create-payment-intent', async (req, res) => {
