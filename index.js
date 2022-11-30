@@ -43,10 +43,22 @@ function verifyJWT(req, res, next) {
 async function run() {
     try {
         const usersCollection = client.db('carbs').collection('users');
-const categoryCollection = client.db('carbs').collection('category');
-const productsCollection = client.db('carbs').collection('products');
-const bookingsCollection = client.db('carbs').collection('bookings');
-const paymentsCollection = client.db('carbs').collection('payments')
+        const categoryCollection = client.db('carbs').collection('category');
+        const productsCollection = client.db('carbs').collection('products');
+        const bookingsCollection = client.db('carbs').collection('bookings');
+        const paymentsCollection = client.db('carbs').collection('payments')
+
+        const verifyAdmin = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await usersCollection.findOne(query);
+
+            if (user?.role !== 'admin') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            next();
+        }
+
         app.get('/users', async (req, res) => {
             let query = {}
             if (req.query.role) {
@@ -64,20 +76,20 @@ const paymentsCollection = client.db('carbs').collection('payments')
             res.send(result)
         })
 
-        app.get('/users/seller', async(req, res) => {
-            const result = await usersCollection.find({role: 'seller'}).toArray()
+        app.get('/users/seller', verifyJWT, verifyAdmin, async (req, res) => {
+            const result = await usersCollection.find({ role: 'seller' }).toArray()
             res.send(result)
         })
-        app.get('/users/buyer', async(req, res) => {
-            const result = await usersCollection.find({role: 'buyer'}).toArray()
+        app.get('/users/buyer', verifyJWT, verifyAdmin, async (req, res) => {
+            const result = await usersCollection.find({ role: 'buyer' }).toArray()
             res.send(result)
         })
-        app.get('/users/seller/:email', async(req, res) => {
+        app.get('/users/seller/:email', async (req, res) => {
             const email = req.params.email;
             console.log(email)
-            const query = {email};
+            const query = { email };
             const user = await usersCollection.findOne(query)
-            res.send({isSeller: user?.role === 'seller'});
+            res.send({ isSeller: user?.role === 'seller' });
         })
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
@@ -86,7 +98,7 @@ const paymentsCollection = client.db('carbs').collection('payments')
             res.send({ isAdmin: user?.role === 'admin' });
         })
 
-      
+
 
         app.get('/category', async (req, res) => {
             const query = {};
@@ -124,10 +136,10 @@ const paymentsCollection = client.db('carbs').collection('payments')
             const filter = { _id: ObjectId(id) };
             const updatedDoc = {
                 $set: {
-                    isAdvertised : true
+                    isAdvertised: true
                 },
             };
-            const options = {upsert: true};
+            const options = { upsert: true };
             const result = await productsCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         });
@@ -141,7 +153,7 @@ const paymentsCollection = client.db('carbs').collection('payments')
 
         app.put('/products/verifySeller/:email', async (req, res) => {
             const email = req.params.email;
-            const filter = { email};
+            const filter = { email };
             const updatedDoc = {
                 $set: {
                     verify: 'verified'
@@ -156,7 +168,7 @@ const paymentsCollection = client.db('carbs').collection('payments')
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
-            const query = { email: email  };
+            const query = { email: email };
             const user = await usersCollection.findOne(query);
             if (user) {
                 const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '20d' })
@@ -164,7 +176,7 @@ const paymentsCollection = client.db('carbs').collection('payments')
             }
             res.status(403).send({ accessToken: '' })
         });
-        
+
 
         app.get('/category/:id', async (req, res) => {
             let query = {};
@@ -176,7 +188,7 @@ const paymentsCollection = client.db('carbs').collection('payments')
             const result = await cursor.toArray();
             res.send(result)
         })
-        app.get('/bookings/:id',  async (req, res) => {
+        app.get('/bookings/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const booking = await bookingsCollection.findOne(query);
@@ -199,7 +211,7 @@ const paymentsCollection = client.db('carbs').collection('payments')
         //     const result = await bookingsCollection.insertOne(order);
         //     res.send(result);
         // });
-        
+
         app.get('/bookings', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
@@ -213,7 +225,7 @@ const paymentsCollection = client.db('carbs').collection('payments')
             console.log(booking)
             res.send(booking);
         });
-        
+
         app.post('/bookings', verifyJWT, async (req, res) => {
             const booking = req.body;
             console.log(booking)
@@ -221,7 +233,7 @@ const paymentsCollection = client.db('carbs').collection('payments')
             console.log(result)
             res.send(result);
         });
-       
+
         // app.get("/products/bookings", verifyJWT, async (req, res) => {
         //     const email = req.query.email;
         //     const query = { email: email };
@@ -229,7 +241,7 @@ const paymentsCollection = client.db('carbs').collection('payments')
         //     res.send(bookings);
         // })
 
-       
+
         app.post('/create-payment-intent', async (req, res) => {
             const booking = req.body;
             const price = booking.price;
@@ -259,20 +271,32 @@ const paymentsCollection = client.db('carbs').collection('payments')
             const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
             res.send(result);
         })
+        app.put('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    role: 'admin'
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
 
-        app.delete('/users/seller/:id', async (req, res) => {
+        app.delete('/users/seller/:id',verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await usersCollection.deleteOne(filter);
             res.send(result);
         })
-        app.delete('/users/buyer/:id', async (req, res) => {
+        app.delete('/users/buyer/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await usersCollection.deleteOne(filter);
             res.send(result);
         })
-        app.delete('/product/:id',verifyJWT,  async (req, res) => {
+        app.delete('/product/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await productsCollection.deleteOne(filter);
