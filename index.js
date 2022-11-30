@@ -37,15 +37,16 @@ function verifyJWT(req, res, next) {
 }
 
 
-const usersCollection = client.db('carbs').collection('users');
-const categoryCollection = client.db('carbs').collection('category');
-const productsCollection = client.db('carbs').collection('products');
-const bookingsCollection = client.db('carbs').collection('bookings');
-const paymentsCollection = client.db('carbs').collection('payments')
+
 
 
 async function run() {
     try {
+        const usersCollection = client.db('carbs').collection('users');
+const categoryCollection = client.db('carbs').collection('category');
+const productsCollection = client.db('carbs').collection('products');
+const bookingsCollection = client.db('carbs').collection('bookings');
+const paymentsCollection = client.db('carbs').collection('payments')
         app.get('/users', async (req, res) => {
             let query = {}
             if (req.query.role) {
@@ -63,7 +64,14 @@ async function run() {
             res.send(result)
         })
 
-        
+        app.get('/users/seller', async(req, res) => {
+            const result = await usersCollection.find({role: 'seller'}).toArray()
+            res.send(result)
+        })
+        app.get('/users/buyer', async(req, res) => {
+            const result = await usersCollection.find({role: 'buyer'}).toArray()
+            res.send(result)
+        })
         app.get('/users/seller/:email', async(req, res) => {
             const email = req.params.email;
             console.log(email)
@@ -148,7 +156,7 @@ async function run() {
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
-            const query = { email: email };
+            const query = { email: email  };
             const user = await usersCollection.findOne(query);
             if (user) {
                 const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '20d' })
@@ -258,7 +266,13 @@ async function run() {
             const result = await usersCollection.deleteOne(filter);
             res.send(result);
         })
-        app.delete('/product/:id', async (req, res) => {
+        app.delete('/users/buyer/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result);
+        })
+        app.delete('/product/:id',verifyJWT,  async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await productsCollection.deleteOne(filter);
